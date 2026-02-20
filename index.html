@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIVYA-DATA | AI Psychological Astrology</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --blush-pink: #FCE7F3;
+            --soft-lilac: #EDE9FE;
+            --sky-blue: #E0F2FE;
+            --cream-white: #FFFBFA;
+            --deep-lavender: #A78BFA;
+            --cosmic-gradient: linear-gradient(135deg, #FBCFE8 0%, #C4B5FD 100%);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --text-main: #4C51BF;
+            --text-soft: #6B7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--cream-white);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Animated Background Elements */
+        .glow-sphere {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.5;
+            animation: float 20s infinite alternate;
+        }
+
+        .glow-1 { width: 400px; height: 400px; background: var(--blush-pink); top: -100px; right: -100px; }
+        .glow-2 { width: 500px; height: 500px; background: var(--sky-blue); bottom: -150px; left: -150px; animation-delay: -5s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 80px) scale(1.1); }
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .logo {
+            font-weight: 800;
+            letter-spacing: 3px;
+            font-size: 0.8rem;
+            color: var(--deep-lavender);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #312E81;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: var(--text-soft);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1.5rem 5rem;
+        }
+
+        /* Form Styling */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px rgba(167, 139, 250, 0.1);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .input-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8rem; }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-soft);
+            padding-left: 0.5rem;
+        }
+
+        input, select {
+            padding: 1rem;
+            border-radius: 14px;
+            border: 1px solid #E5E7EB;
+            background: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--deep-lavender);
+        }
+
+        .btn-primary {
+            width: 100%;
+            margin-top: 2rem;
+            padding: 1.2rem;
+            border: none;
+            border-radius: 14px;
+            background: var(--cosmic-gradient);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(196, 181, 253, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(196, 181, 253, 0.6);
+        }
+
+        /* Results Display */
+        #results-area {
+            display: none;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--blush-pink);
+            padding-bottom: 1rem;
+        }
+
+        .tag {
+            background: var(--soft-lilac);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .grid-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            border-left: 4px solid var(--deep-lavender);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--text-soft);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            font-size: 1rem;
+            color: #374151;
+        }
+
+        .score-box {
+            text-align: center;
+            padding: 2rem;
+            background: var(--cosmic-gradient);
+            color: white;
+            border-radius: 20px;
+        }
+
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 2rem 0;
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--blush-pink);
+            border-top: 5px solid var(--deep-lavender);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-soft);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-sphere glow-1"></div>
+    <div class="glow-sphere glow-2"></div>
+
+    <header>
+        <div class="logo">Divya-Data Systems</div>
+        <h1>Psychological Astrology</h1>
+        <p class="subtitle">Decode your shadow self and emotional blueprints using celestial data and cognitive archetypes.</p>
+    </header>
+
+    <div class="container">
+        <!-- Input Form -->
+        <div class="card" id="input-card">
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="userName" placeholder="e.g. Alex Rivera">
+                </div>
+                <div class="input-group">
+                    <label>Birth Date</label>
+                    <input type="date" id="birthDate">
+                </div>
+                <div class="input-group">
+                    <label>Birth Time</label>
+                    <input type="time" id="birthTime">
+                </div>
+                <div class="input-group">
+                    <label>Focus Area</label>
+                    <select id="focus">
+                        <option value="attachment">Attachment & Love</option>
+                        <option value="shadow">Shadow & Trauma</option>
+                        <option value="growth">Career & Growth</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="generateReport()">Generate Analysis</button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Syncing with celestial coordinates...</p>
+        </div>
+
+        <!-- Results Area -->
+        <div id="results-area">
+            <div class="card">
+                <div class="report-header">
+                    <div>
+                        <h2 id="res-name" style="font-weight: 400;">User Analysis</h2>
+                        <p id="res-sign" style="color: var(--deep-lavender); font-weight: 600;"></p>
+                    </div>
+                    <div class="tag">Confidential Report</div>
+                </div>
+
+                <div class="grid-results">
+                    <div class="stat-card">
+                        <h3>Shadow Self Analysis</h3>
+                        <p id="shadow-text"></p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Emotional Trauma Pattern</h3>
+                        <p id="trauma-text"></p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Attachment Style</h3>
+                        <p id="attachment-text"></p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Self-Sabotage Tendencies</h3>
+                        <p id="sabotage-text"></p>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="psycheChart"></canvas>
+                </div>
+
+                <div class="score-box">
+                    <p>Internal Resilience Score</p>
+                    <div class="score-value" id="confidence-score">0</div>
+                    <p style="font-size: 0.8rem; opacity: 0.9;">Calculated based on Moon & Saturn placements</p>
+                </div>
+            </div>
+            
+            <button class="btn-primary" style="background: var(--sky-blue); color: var(--text-main); box-shadow: none;" onclick="window.location.reload()">Start New Session</button>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2025 DIVYA-DATA. All rights reserved. Aesthetics for the modern soul.
+    </footer>
+
+    <script>
+        const ZODIAC_DATA = [
+            { sign: "Aries", element: "Fire", shadow: "Impulsive aggression and fear of being seen as weak.", trauma: "Suppressed anger stemming from early competition.", sabotage: "Starting too many things, finishing none to avoid judgment.", attachment: "Anxious-Avoidant" },
+            { sign: "Taurus", element: "Earth", shadow: "Material possessiveness and paralyzing fear of change.", trauma: "Instability in early childhood home life.", sabotage: "Staying in comfort zones that have become toxic.", attachment: "Secure (Leaning Anxious)" },
+            { sign: "Gemini", element: "Air", shadow: "Superficiality and fragmentation of identity.", trauma: "Not being heard or being told to be quiet.", sabotage: "Intellectualizing emotions to avoid feeling them.", attachment: "Avoidant" },
+            { sign: "Cancer", element: "Water", shadow: "Emotional manipulation and 'The Martyr' complex.", trauma: "Emotional neglect or enmeshment with caregivers.", sabotage: "Isolating yourself when you need help most.", attachment: "Anxious" },
+            { sign: "Leo", element: "Fire", shadow: "Fragile ego and desperate need for external validation.", trauma: "Lack of recognition for your true self.", sabotage: "Performing a 'version' of yourself rather than being real.", attachment: "Secure" },
+            { sign: "Virgo", element: "Earth", shadow: "Hyper-criticism and debilitating perfectionism.", trauma: "High pressure to perform perfectly at a young age.", sabotage: "Fixing others to avoid fixing yourself.", attachment: "Anxious" },
+            { sign: "Libra", element: "Air", shadow: "Conflict avoidance and loss of self in partnerships.", trauma: "Growing up in a chaotic, discordant environment.", sabotage: "Saying 'Yes' when your soul says 'No'.", attachment: "Anxious-Avoidant" },
+            { sign: "Scorpio", element: "Water", shadow: "Obsessive control and fear of true vulnerability.", trauma: "Betrayal of trust early in life.", sabotage: "Testing others' loyalty until they leave.", attachment: "Disorganized" },
+            { sign: "Sagittarius", element: "Fire", shadow: "Spiritual bypassing and running from commitment.", trauma: "Feeling trapped or physically restricted as a child.", sabotage: "Leaving just before things get meaningful.", attachment: "Avoidant" },
+            { sign: "Capricorn", element: "Earth", shadow: "Using work as a shield and emotional coldness.", trauma: "Having to grow up too fast and take responsibility.", sabotage: "Prioritizing status over emotional fulfillment.", attachment: "Dismissive" },
+            { sign: "Aquarius", element: "Air", shadow: "Superiority complex and emotional detachment.", trauma: "Feeling like an alien in your own family.", sabotage: "Maintaining distance to 'protect' your freedom.", attachment: "Avoidant" },
+            { sign: "Pisces", element: "Water", shadow: "Escapism and lack of psychological boundaries.", trauma: "Absorbing the pain of others without filter.", sabotage: "Getting lost in fantasies to avoid reality.", attachment: "Anxious" }
+        ];
+
+        function getZodiacSign(date) {
+            const d = new Date(date);
+            const month = d.getMonth() + 1;
+            const day = d.getDate();
+            if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return 10;
+            if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) return 11;
+            if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return 0;
+            if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return 1;
+            if ((month == 5 && day >= 21) || (month == 6 && day <= 20)) return 2;
+            if ((month == 6 && day >= 21) || (month == 7 && day <= 22)) return 3;
+            if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return 4;
+            if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return 5;
+            if ((month == 9 && day >= 23) || (month == 10 && day <= 22)) return 6;
+            if ((month == 10 && day >= 23) || (month == 11 && day <= 21)) return 7;
+            if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return 8;
+            return 9;
+        }
+
+        let myChart = null;
+
+        function generateReport() {
+            const name = document.getElementById('userName').value;
+            const date = document.getElementById('birthDate').value;
+            
+            if(!name || !date) {
+                alert("Please provide your name and birth date for a precise alignment.");
+                return;
+            }
+
+            document.getElementById('input-card').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
+            // Simulate AI Processing
+            setTimeout(() => {
+                const index = getZodiacSign(date);
+                const data = ZODIAC_DATA[index];
+                
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('results-area').style.display = 'block';
+
+                document.getElementById('res-name').innerText = `${name}'s Psyche Map`;
+                document.getElementById('res-sign').innerText = `${data.sign} Sun | ${data.element} Dominant`;
+                
+                document.getElementById('shadow-text').innerText = data.shadow;
+                document.getElementById('trauma-text').innerText = data.trauma;
+                document.getElementById('attachment-text').innerText = data.attachment;
+                document.getElementById('sabotage-text').innerText = data.sabotage;
+
+                // Calculate a pseudo-random confidence score based on sign + date
+                const score = 65 + (index * 2) + (new Date(date).getDate() % 10);
+                document.getElementById('confidence-score').innerText = score;
+
+                renderChart(data.element);
+            }, 2000);
+        }
+
+        function renderChart(element) {
+            const ctx = document.getElementById('psycheChart').getContext('2d');
+            
+            // Varied levels based on element
+            let values = [70, 60, 80, 50, 90]; // Default
+            if(element === "Fire") values = [90, 40, 60, 85, 70];
+            if(element === "Water") values = [50, 95, 40, 60, 80];
+            if(element === "Air") values = [80, 50, 90, 70, 60];
+            if(element === "Earth") values = [60, 70, 50, 90, 85];
+
+            if (myChart) myChart.destroy();
+
+            myChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Cognitive Logic', 'Emotional Depth', 'Social Identity', 'Shadow Integration', 'Resilience'],
+                    datasets: [{
+                        label: 'Psychological Balance',
+                        data: values,
+                        backgroundColor: 'rgba(196, 181, 253, 0.4)',
+                        borderColor: '#A78BFA',
+                        pointBackgroundColor: '#FBCFE8',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
